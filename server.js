@@ -19,7 +19,12 @@ var articles={
           This is the content of Article One. This is the content of Article One. This is the content of Article One.
           This is the content of Article One. This is the content of Article One. This is the content of Article One.
           This is the content of Article One. This is the content of Article One. This is the content of Article One.
-        </p>`
+        </p>`,
+    comments: [
+      {
+        comment:"This is the comment for Article One"
+      }
+    ]
     },
     'article-two':{
         title: "Article Two | Parth Suthar",
@@ -43,8 +48,8 @@ var articles={
           This is the content of Article Three.
         </p>`
     }
+};
 
-}
 function createTemplate(data){
     var title = data.title;
     var heading = data.heading;
@@ -69,12 +74,20 @@ function createTemplate(data){
                                   ${date}
                                 </div>
                                 ${content}
+                                <hr/>
+                                <textarea placeholder="add comment..." id='commentArea' rows="5" cols="45"></textarea>
+                                <br/>
+                                <button id='commentSubmit'>Submit</button><br/>
+                                <h5>Comments</h5>
+                                <ul id='commentList'>
+                                </ul>
                             </div>
+                            <script type="text/javascript" src="/ui/article-comments.js"></script>
                           </body>
                         </html>`;
 
     return htmlTemplate;
-}
+};
 
 app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, 'ui', 'index.html'));
@@ -109,6 +122,10 @@ app.get('/ui/parth.png', function (req, res) {
 
 app.get('/ui/main.js', function (req, res) {
   res.sendFile(path.join(__dirname, 'ui', 'main.js'));
+});
+
+app.get('/ui/article-comments.js', function (req, res) {
+  res.sendFile(path.join(__dirname, 'ui', 'article-comments.js'));
 });
 
 
