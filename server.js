@@ -4,6 +4,7 @@ var path = require('path');
 var Pool = require('pg').Pool;
 var crypto = require('crypto');
 var bodyParser = require('body-parser');
+var session = require("express-session");
 
 var config = {
   host:"http://db.imad.hasura-app.io",
@@ -16,6 +17,10 @@ var config = {
 var app = express();
 app.use(morgan('combined'));
 app.use(bodyParser.json());
+app.use(session({
+  secret: "don't tilt me",
+  cookie:{maxAge: 1000 * 3600 * 24 * 30}
+}));
 
 var articles={
     'article-one': {
@@ -32,11 +37,6 @@ var articles={
           This is the content of Article One. This is the content of Article One. This is the content of Article One.
           This is the content of Article One. This is the content of Article One. This is the content of Article One.
         </p>`,
-    comments: [
-      {
-        comment:"This is the comment for Article One"
-      }
-    ]
     },
     'article-two':{
         title: "Article Two | Parth Suthar",
@@ -87,9 +87,11 @@ function createTemplate(data){
                                 </div>
                                 ${content}
                                 <hr/>
+                                <div id="enterCommentDiv">
                                 <textarea placeholder="add comment..." id='commentArea' rows="5" cols="45"></textarea>
                                 <br/>
                                 <button id='commentSubmit'>Submit</button><br/>
+                                </div>
                                 <h5>Comments</h5>
                                 <ul id='commentList'>
                                 </ul>
@@ -148,6 +150,7 @@ app.post('/login', function(req, res){
         var hashedPassword = hash(password, salt);
         
         if(hashedPassword === dbString){
+          req.session.auth = {userId: result.rows[0].id};
           res.send("Credentials are correct!");
         } else{
           res.status(403).send("username/password invalid");
@@ -158,6 +161,19 @@ app.post('/login', function(req, res){
     }
   });
 });
+
+app.get('/check-login', function(req, res){
+  if(req.session && req.session.auth && req.session.auth.userId)
+    res.send("You are logged in: "+ req.session.auth.userId);
+  else
+    res.send("You are logged out.");
+});
+
+app.get('/logout', function(req, res){
+  delete req.session.auth;
+  res.send("Logged out");
+});
+
 
 app.get('/test-db', function(req, res){
   pool.query("SELECT * FROM user", function(err, result){
